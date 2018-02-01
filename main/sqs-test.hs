@@ -21,8 +21,9 @@ main = do
         Queue (QueueName "erikd-was-here") SydneyRegion
   let region =
         fromMismiRegion $ queueRegion queue
-  res <- runEitherT . runAWSWithRegion region $
-            onQueue queue (Just 8400) (run "Message")
+  res <- runEitherT . runAWSWithRegion region $ do
+            (<>) <$> onQueue queue (Just 8400) (run "zero")
+                 <*> onQueue queue (Just 8401) (run "one")
   print res
 
 
@@ -31,5 +32,4 @@ run msg q = do
   void $ writeMessage q msg Nothing
   ms <- readMessages q (Just 1) Nothing
   assert ([msg] == mapMaybe (^. mBody) ms) $ pure ()
-  deleteQueue q
   pure $ mapMaybe (^. mBody) ms
