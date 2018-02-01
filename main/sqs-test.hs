@@ -6,7 +6,7 @@ import Control.Lens
 
 import Mismi.Kernel.Data
 import Mismi.SQS
-import Mismi.SQS.Amazonka
+import Mismi.SQS.Amazonka (mBody)
 
 import P
 
@@ -21,14 +21,15 @@ main = do
         Queue (QueueName "erikd-was-here") SydneyRegion
   let region =
         fromMismiRegion $ queueRegion queue
-  res <- runEitherT . runAWSWithRegion region $ onQueue queue (Just 8400) wibble
+  res <- runEitherT . runAWSWithRegion region $
+            onQueue queue (Just 8400) (run "Message")
   print res
 
 
-wibble :: QueueUrl -> AWS ()
-wibble q = do
-  let msg =
-        "Here is a messgae"
+run :: Text -> QueueUrl -> AWS [Text]
+run msg q = do
   void $ writeMessage q msg Nothing
   ms <- readMessages q (Just 1) Nothing
-  assert ([Just msg] == fmap (^. mBody) ms) $ pure ()
+  assert ([msg] == mapMaybe (^. mBody) ms) $ pure ()
+  deleteQueue q
+  pure $ mapMaybe (^. mBody) ms
