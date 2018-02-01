@@ -24,3 +24,17 @@ executable sqs-test
                      , ambiata-x-eithert
                      , lens
                      , text
+
+executable sqs-queue-create
+  default-language:    Haskell2010
+  main-is:             sqs-queue-create.hs
+  hs-source-dirs:      main
+
+  build-depends:       base
+                     , amazonka-sqs
+                     , ambiata-p
+                     , ambiata-mismi-kernel
+                     , ambiata-mismi-sqs
+                     , ambiata-x-eithert
+                     , lens
+                     , text
